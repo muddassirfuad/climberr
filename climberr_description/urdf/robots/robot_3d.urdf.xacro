@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:gz="https://gazebosim.org" name="robot_3d">
+
+    <xacro:property name="M_PI" value="3.1415926535897931" />
+
+    <xacro:arg name="robot_name" default="robot_3d"/>
+    <xacro:arg name="prefix" default=""/>
+    <xacro:arg name="use_gazebo" default="false"/>
+
+    <!-- Include components -->
+    <xacro:include filename="../mech/robot_3d_base.urdf.xacro"/>
+    <xacro:include filename="../mech/wheel.urdf.xacro"/>
+    <xacro:include filename="../sensors/rgbd_camera.urdf.xacro"/>
+    <xacro:include filename="../sensors/lidar.urdf.xacro"/>
+    <xacro:include filename="../control/climberr.gazebo"/>
+
+    <!-- Base frame -->
+    <xacro:robot_3d_base prefix="$(arg prefix)"/>
+
+    <!-- FRONT: Driven wheels (add joint type "continuous" or "revolute" and actuator/ros2_control) -->
+    <xacro:wheel
+      prefix="$(arg prefix)"
+      side="front_left"
+      driven="true"
+      x_reflect="1"
+      y_reflect="1"/>
+
+    <xacro:wheel
+      prefix="$(arg prefix)"
+      side="front_right"
+      driven="true"
+      x_reflect="1"
+      y_reflect="-1"/>
+
+    <!-- REAR: Passive wheels (no actuator, joint can be fixed or continuous but not powered) -->
+    <xacro:wheel
+      prefix="$(arg prefix)"
+      side="back_left"
+      driven="true"
+      x_reflect="-1"
+      y_reflect="1"/>
+
+    <xacro:wheel
+      prefix="$(arg prefix)"
+      side="back_right"
+      driven="true"
+      x_reflect="-1"
+      y_reflect="-1"/>
+
+    <!-- Sensors remain as-is -->
+    <xacro:rgbd_camera
+      prefix="$(arg prefix)"
+      camera_name="cam_1"
+      xyz_offset="0.105 0 0.03"
+      rpy_offset="0 0 0"/>
+
+    <xacro:lidar_sensor
+      prefix="$(arg prefix)"
+      parent="base_link"
+      frame_id="laser_frame"
+      xyz_offset="0 0 0.0825"
+      rpy_offset="0 0 3.14"
+      mesh_xyz_offset="0 0 0"
+      mesh_rpy_offset="${-M_PI/2} 0 0"
+      topic_name="scan"/>
+
+    <!-- Gazebo friction for front wheels (powered) -->
+    <gazebo reference='front_left_wheel_link'>
+      <collision>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.5</mu>
+              <mu2>0.0</mu2>
+              <fdir1 gz:expressed_in="base_footprint">1 -1 0</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+    </gazebo>
+
+    <gazebo reference='front_right_wheel_link'>
+      <collision>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.5</mu>
+              <mu2>0.0</mu2>
+              <fdir1 gz:expressed_in="base_footprint">1 1 0</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+    </gazebo>
+
+    <!-- Rear wheels: Lower friction or same as above (if needed) -->
+    <gazebo reference='back_left_wheel_link'>
+      <collision>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.5</mu>
+              <mu2>0.0</mu2>
+              <fdir1 gz:expressed_in="base_footprint">1 1 0</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+    </gazebo>
+    <gazebo reference='back_right_wheel_link'>
+      <collision>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.5</mu>
+              <mu2>0.0</mu2>
+              <fdir1 gz:expressed_in="base_footprint">1 -1 0</fdir1>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+    </gazebo>
+
+    <!-- Base link Gazebo settings -->
+    <gazebo reference="base_link">
+      <mu1>0.000002</mu1>
+      <mu2>0.000002</mu2>
+    </gazebo>
+</robot>

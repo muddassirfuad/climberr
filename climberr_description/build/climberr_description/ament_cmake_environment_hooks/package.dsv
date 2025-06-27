@@ -1,0 +1,4 @@
+source;share/climberr_description/local_setup.bash
+source;share/climberr_description/local_setup.dsv
+source;share/climberr_description/local_setup.sh
+source;share/climberr_description/local_setup.zsh
